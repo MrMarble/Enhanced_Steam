@@ -3,7 +3,7 @@ var version = "9.4";
 var console_info = ["%c Enhanced %cSteam v" + version + " by jshackles %c http://www.enhancedsteam.com ", "background: #000000;color: #7EBE45", "background: #000000;color: #ffffff", ""];
 console.log.apply(console, console_info);
 
-var storage = chrome.storage.sync || chrome.storage.local;
+var storage = new Map();
 var info = 0;
 var protocol = (window.location.protocol);
 
@@ -55,7 +55,7 @@ var localization_promise = (function () {
 		"turkish": "tr",
 		"ukrainian": "ua"}[language] || "en";
 	$.ajax({
-		url: chrome.extension.getURL('/localization/en/strings.json'),
+		url: 'http://raw.githubusercontent.com/MrMarble/Enhanced_Steam/master/localization/en/strings.json'),
 		mimeType: "application/json",
 		success: function (data) {
 			if (l_code == "en") {
@@ -63,7 +63,7 @@ var localization_promise = (function () {
 				l_deferred.resolve();
 			} else {
 				$.ajax({
-					url: chrome.extension.getURL('/localization/' + l_code + '/strings.json'),
+					url: 'https://raw.githubusercontent.com/MrMarble/Enhanced_Steam/master/localization/' + l_code + '/strings.json'),
 					mimeType: "application/json",
 					success: function (data_localized) {
 						localized_strings = $.extend(true, data, data_localized);
@@ -85,7 +85,7 @@ var currency_promise = (function() {
 			user_currency = settings.override_price;
 			deferred.resolve();
 		} else {
-			chrome.storage.local.get("user_currency", function(currency_cache) {
+			storage.local.get("user_currency", function(currency_cache) {
 				var expire_time = parseInt(Date.now() / 1000, 10) - 1 * 60 * 60; // One hour ago
 				if (currency_cache.user_currency && currency_cache.user_currency.currency_type && currency_cache.user_currency.updated >= expire_time) {
 					user_currency = currency_cache.user_currency.currency_type;
@@ -101,12 +101,12 @@ var currency_promise = (function() {
 						}, "xhrFields: { withCredentials: true }").fail(function() {
 							user_currency = "USD";
 						}).done(function() {
-							chrome.storage.local.set({user_currency: {currency_type: user_currency, updated: parseInt(Date.now() / 1000, 10)}});
+							storage.local.set({user_currency: {currency_type: user_currency, updated: parseInt(Date.now() / 1000, 10)}});
 						}).always(function() {
 							deferred.resolve();
 						});
 					}).done(function() {
-						chrome.storage.local.set({user_currency: {currency_type: user_currency, updated: parseInt(Date.now() / 1000, 10)}});
+						storage.local.set({user_currency: {currency_type: user_currency, updated: parseInt(Date.now() / 1000, 10)}});
 						deferred.resolve();
 					});
 				}
@@ -155,7 +155,7 @@ var dynamicstore_promise = (function () {
 	var deferred = new $.Deferred();
 
 	if (is_signed_in) {
-		chrome.storage.local.get("dynamicstore", function(userdata) {
+		storage.local.get("dynamicstore", function(userdata) {
 			var expire_time = parseInt(Date.now() / 1000, 10) - 1 * 60 * 60 * 24, // 24 hours ago
 				dataVersion = sessionStorage.getItem("unUserdataVersion") || 0;
 
@@ -178,7 +178,7 @@ var dynamicstore_promise = (function () {
 				get_http(protocol + "//store.steampowered.com/dynamicstore/userdata/?v=" + expire_time + (accountid ? "&id=" + accountid : ""), function(txt) {
 					var data = JSON.parse(txt);
 					if (data && data.hasOwnProperty("rgOwnedApps") && !$.isEmptyObject(data.rgOwnedApps)) {
-						chrome.storage.local.set({
+						storage.local.set({
 							dynamicstore: {
 								data: data,
 								updated: parseInt(Date.now() / 1000, 10),
