@@ -55,7 +55,7 @@ var localization_promise = (function () {
 		"turkish": "tr",
 		"ukrainian": "ua"}[language] || "en";
 	$.ajax({
-		url: 'http://raw.githubusercontent.com/MrMarble/Enhanced_Steam/master/localization/en/strings.json'),
+		url: 'http://rawgithub.com/MrMarble/Enhanced_Steam/master/localization/en/strings.json',
 		mimeType: "application/json",
 		success: function (data) {
 			if (l_code == "en") {
@@ -63,7 +63,7 @@ var localization_promise = (function () {
 				l_deferred.resolve();
 			} else {
 				$.ajax({
-					url: 'https://raw.githubusercontent.com/MrMarble/Enhanced_Steam/master/localization/' + l_code + '/strings.json'),
+					url: 'https://rawgithub.com/MrMarble/Enhanced_Steam/master/localization/' + l_code + '/strings.json'),
 					mimeType: "application/json",
 					success: function (data_localized) {
 						localized_strings = $.extend(true, data, data_localized);
